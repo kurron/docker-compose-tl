@@ -1,0 +1,172 @@
+mongodb-data:
+  image: busybox
+  container_name: mongodb-data 
+  volumes:
+      - /data/db 
+
+mongodb:
+  image: mongo
+  container_name: mongodb
+  hostname: mongodb
+  volumes_from:
+      - mongodb-data
+  restart: always
+  ports:
+      - "27017:27017"
+  net: host
+  command: mongod --storageEngine=wiredTiger --wiredTigerCacheSizeGB=1 --notablescan --journalCommitInterval=300 --directoryperdb 
+
+mysql-data:
+  image: busybox
+  container_name: mysql-data 
+  volumes:
+      - /var/lib/mysql 
+      - /etc/mysql/conf.d 
+
+mysql:
+  image: mysql
+  container_name: mysql
+  hostname: mysql
+  volumes_from:
+      - mysql-data
+  restart: always
+  ports:
+      - "3306:3306"
+  net: host
+  environment:
+      MYSQL_ROOT_PASSWORD: sa
+      MYSQL_USER: mysql
+      MYSQL_PASSWORD: mysql
+      MYSQL_DATABASE: monitor
+
+rabbitmq-data:
+  image: busybox
+  container_name: rabbitmq-data 
+  volumes:
+      - /var/lib/rabbitmq 
+
+rabbitmq:
+  # this image uses smaller memory values than the default configuration does
+  image: kurron/docker-rabbitmq 
+  container_name: rabbitmq
+  hostname: rabbitmq
+  volumes_from:
+      - rabbitmq-data
+  restart: always
+  ports:
+      - "5672:5672"
+      - "15672:15672"
+  net: host
+  # limit RabbitMQ to 1GB of RAM or it will steal 40% of available memory
+  mem_limit: 1000000000
+  environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+      RABBITMQ_DEFAULT_VHOST: /
+
+redis-data:
+  image: busybox
+  container_name: redis-data
+  volumes:
+      - /data
+
+redis:
+  image: redis 
+  container_name: redis
+  hostname: redis
+  volumes_from:
+      - redis-data
+  restart: always
+  ports:
+      - "6379:6379"
+  net: host
+
+postgresql-data:
+  image: busybox
+  container_name: postgresql-data
+  volumes:
+      - /var/lib/postgresql/data 
+
+postgresql:
+  image: postgres
+  container_name: postgresql
+  hostname: postgresql
+  volumes_from:
+      - postgresql-data
+  restart: always
+  ports:
+      - "5432:5432"
+  net: host
+  environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+
+rabbitmq-service:
+  image: kurron/docker-monitor-rabbitmq:latest
+  container_name: rabbitmq-service
+  ports:
+      - "8500:8500"
+  net: host
+  environment:
+      NEW_RELIC_APP_NAME: rabbitmq-service
+
+postgresql-service:
+  image: kurron/docker-monitor-postgresql:latest
+  container_name: postgresql-service
+  ports:
+      - "8400:8400"
+  net: host
+  environment:
+      NEW_RELIC_APP_NAME: postgresql-service
+
+mysql-service:
+  image: kurron/docker-monitor-mysql:latest
+  container_name: mysql-service
+  ports:
+      - "8300:8300"
+  net: host
+  environment:
+      NEW_RELIC_APP_NAME: mysql-service
+
+redis-service:
+  image: kurron/docker-monitor-redis:latest
+  container_name: redis-service
+  ports:
+      - "8200:8200"
+  net: host
+  environment:
+      NEW_RELIC_APP_NAME: redis-service
+
+mongodb-service:
+  image: kurron/docker-monitor-mongodb:latest
+  container_name: mongodb-service
+  ports:
+      - "8100:8100"
+  net: host
+  environment:
+      NEW_RELIC_APP_NAME: mongodb-service
+
+api-gateway-service:
+  image: kurron/docker-monitor-api-gateway:latest
+  container_name: api-gateway-service
+  ports:
+      - "8000:8000"
+  net: host
+  environment:
+      NEW_RELIC_APP_NAME: api-gateway-service
+
+mysql-plugin:
+  image: kurron/docker-monitor-newrelic-mysql-plugin
+  container_name: mysql-plugin
+  net: host
+
+pivotal-plugin:
+  image: kurron/docker-monitor-newrelic-pivotal-plugin
+  container_name: pivotal-plugin
+  net: host
+
+mongodb-plugin:
+  image: kurron/docker-monitor-newrelic-mongodb-plugin
+  container_name: mongodb-plugin
+  net: host
+
