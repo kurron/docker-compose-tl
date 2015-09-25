@@ -37,7 +37,7 @@ mysql:
       MYSQL_ROOT_PASSWORD: sa
       MYSQL_USER: mysql
       MYSQL_PASSWORD: mysql
-      MYSQL_DATABASE: monitor
+      MYSQL_DATABASE: sushe
 
 rabbitmq-data:
   image: busybox
@@ -46,8 +46,7 @@ rabbitmq-data:
       - /var/lib/rabbitmq 
 
 rabbitmq:
-  # this image uses smaller memory values than the default configuration does
-  image: kurron/docker-rabbitmq 
+  image: rabbitmq:management
   container_name: rabbitmq
   hostname: rabbitmq
   volumes_from:
@@ -79,94 +78,5 @@ redis:
   restart: always
   ports:
       - "6379:6379"
-  net: host
-
-postgresql-data:
-  image: busybox
-  container_name: postgresql-data
-  volumes:
-      - /var/lib/postgresql/data 
-
-postgresql:
-  image: postgres
-  container_name: postgresql
-  hostname: postgresql
-  volumes_from:
-      - postgresql-data
-  restart: always
-  ports:
-      - "5432:5432"
-  net: host
-  environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-
-rabbitmq-service:
-  image: kurron/docker-monitor-rabbitmq:latest
-  container_name: rabbitmq-service
-  ports:
-      - "8500:8500"
-  net: host
-  environment:
-      NEW_RELIC_APP_NAME: rabbitmq-service
-
-postgresql-service:
-  image: kurron/docker-monitor-postgresql:latest
-  container_name: postgresql-service
-  ports:
-      - "8400:8400"
-  net: host
-  environment:
-      NEW_RELIC_APP_NAME: postgresql-service
-
-mysql-service:
-  image: kurron/docker-monitor-mysql:latest
-  container_name: mysql-service
-  ports:
-      - "8300:8300"
-  net: host
-  environment:
-      NEW_RELIC_APP_NAME: mysql-service
-
-redis-service:
-  image: kurron/docker-monitor-redis:latest
-  container_name: redis-service
-  ports:
-      - "8200:8200"
-  net: host
-  environment:
-      NEW_RELIC_APP_NAME: redis-service
-
-mongodb-service:
-  image: kurron/docker-monitor-mongodb:latest
-  container_name: mongodb-service
-  ports:
-      - "8100:8100"
-  net: host
-  environment:
-      NEW_RELIC_APP_NAME: mongodb-service
-
-api-gateway-service:
-  image: kurron/docker-monitor-api-gateway:latest
-  container_name: api-gateway-service
-  ports:
-      - "8000:8000"
-  net: host
-  environment:
-      NEW_RELIC_APP_NAME: api-gateway-service
-
-mysql-plugin:
-  image: kurron/docker-monitor-newrelic-mysql-plugin
-  container_name: mysql-plugin
-  net: host
-
-pivotal-plugin:
-  image: kurron/docker-monitor-newrelic-pivotal-plugin
-  container_name: pivotal-plugin
-  net: host
-
-mongodb-plugin:
-  image: kurron/docker-monitor-newrelic-mongodb-plugin
-  container_name: mongodb-plugin
   net: host
 
