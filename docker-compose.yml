@@ -7,7 +7,6 @@ mongodb-data:
 mongodb:
   image: mongo
   container_name: mongodb
-  hostname: mongodb
   volumes_from:
       - mongodb-data
   restart: always
@@ -26,7 +25,6 @@ mysql-data:
 mysql:
   image: mysql
   container_name: mysql
-  hostname: mysql
   volumes_from:
       - mysql-data
   restart: always
@@ -48,7 +46,6 @@ rabbitmq-data:
 rabbitmq:
   image: rabbitmq:management
   container_name: rabbitmq
-  hostname: rabbitmq
   volumes_from:
       - rabbitmq-data
   restart: always
@@ -72,7 +69,6 @@ redis-data:
 redis:
   image: redis 
   container_name: redis
-  hostname: redis
   volumes_from:
       - redis-data
   restart: always
