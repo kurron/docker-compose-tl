@@ -76,3 +76,11 @@ redis:
       - "6379:6379"
   net: host
 
+consul:
+  image: kurron/docker-consul:latest
+  container_name: consul
+  restart: always
+  ports:
+      - "8500:8500"
+  net: host
+  command: agent -dc=development -ui -dev -bind=127.0.0.1
