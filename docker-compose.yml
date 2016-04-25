@@ -1,86 +1,90 @@
-mongodb-data:
-  image: busybox
-  container_name: mongodb-data 
-  volumes:
-      - /data/db 
+version: '2'
+services:
+    mongo-express:
+        image: mongo-express:latest
+        container_name: mongodb-express
+        network_mode: host
+        environment:
+        - ME_CONFIG_MONGODB_SERVER=localhost
+        depends_on: 
+        - mongodb
 
-mongodb:
-  image: mongo
-  container_name: mongodb
-  volumes_from:
-      - mongodb-data
-  restart: always
-  ports:
-      - "27017:27017"
-  net: host
-  command: mongod --storageEngine=wiredTiger --wiredTigerCacheSizeGB=1 --notablescan --journalCommitInterval=300 --directoryperdb 
+    mongodb-data:
+        image: busybox
+        container_name: mongodb-data
+        network_mode: none
+        volumes:
+        - /data/db
 
-mysql-data:
-  image: busybox
-  container_name: mysql-data 
-  volumes:
-      - /var/lib/mysql 
-      - /etc/mysql/conf.d 
+    mongodb:
+        image: mongo
+        container_name: mongodb
+        volumes_from:
+        - mongodb-data
+        restart: always
+        network_mode: host
+        command: mongod --storageEngine=wiredTiger --wiredTigerCacheSizeGB=1 --notablescan --journalCommitInterval=300 --directoryperdb
 
-mysql:
-  image: mysql
-  container_name: mysql
-  volumes_from:
-      - mysql-data
-  restart: always
-  ports:
-      - "3306:3306"
-  net: host
-  environment:
-      MYSQL_ROOT_PASSWORD: sa
-      MYSQL_USER: mysql
-      MYSQL_PASSWORD: mysql
-      MYSQL_DATABASE: sushe
+    mysql-data:
+        image: busybox
+        container_name: mysql-data
+        network_mode: none
+        volumes:
+        - /var/lib/mysql
+        - /etc/mysql/conf.d
 
-rabbitmq-data:
-  image: busybox
-  container_name: rabbitmq-data 
-  volumes:
-      - /var/lib/rabbitmq 
+    mysql:
+        image: mysql
+        container_name: mysql
+        volumes_from:
+        - mysql-data
+        restart: always
+        network_mode: host
+        environment:
+            MYSQL_ROOT_PASSWORD: sa
+            MYSQL_USER: mysql
+            MYSQL_PASSWORD: mysql
+            MYSQL_DATABASE: sushe
 
-rabbitmq:
-  image: rabbitmq:management
-  container_name: rabbitmq
-  volumes_from:
-      - rabbitmq-data
-  restart: always
-  ports:
-      - "5672:5672"
-      - "15672:15672"
-  net: host
-  # limit RabbitMQ to 1GB of RAM or it will steal 40% of available memory
-  mem_limit: 1000000000
-  environment:
-      RABBITMQ_DEFAULT_USER: guest
-      RABBITMQ_DEFAULT_PASS: guest
-      RABBITMQ_DEFAULT_VHOST: /
+    rabbitmq-data:
+        image: busybox
+        container_name: rabbitmq-data
+        network_mode: none
+        volumes:
+        - /var/lib/rabbitmq
 
-redis-data:
-  image: busybox
-  container_name: redis-data
-  volumes:
-      - /data
+    rabbitmq:
+        image: rabbitmq:management
+        container_name: rabbitmq
+        volumes_from:
+        - rabbitmq-data
+        restart: always
+        network_mode: host
+        # limit RabbitMQ to 1GB of RAM or it will steal 40% of available memory
+        mem_limit: 1000000000
+        environment:
+            RABBITMQ_DEFAULT_USER: guest
+            RABBITMQ_DEFAULT_PASS: guest
+            RABBITMQ_DEFAULT_VHOST: /
 
-redis:
-  image: redis 
-  container_name: redis
-  volumes_from:
-      - redis-data
-  restart: always
-  ports:
-      - "6379:6379"
-  net: host
+    redis-data:
+        image: busybox
+        container_name: redis-data
+        network_mode: none
+        volumes:
+        - /data
 
-consul:
-  image: kurron/docker-consul:latest
-  container_name: consul
-  restart: always
-  ports:
-      - "8500:8500"
-  net: host
-  command: agent -dc=development -ui -dev -bind=127.0.0.1
+    redis:
+        image: redis
+        container_name: redis
+        volumes_from:
+        - redis-data
+        restart: always
+        network_mode: host
+
+    consul:
+        image: kurron/docker-consul:latest
+        container_name: consul
+        restart: always
+        network_mode: host
+        command: agent -dc=development -ui -dev -bind=127.0.0.1
