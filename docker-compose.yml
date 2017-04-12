@@ -83,8 +83,7 @@ services:
         network_mode: host
 
     consul:
-        image: kurron/docker-consul:latest
+        image: consul:latest
         container_name: consul
         restart: always
         network_mode: host
-        command: agent -dc=development -ui -dev -bind=127.0.0.1
